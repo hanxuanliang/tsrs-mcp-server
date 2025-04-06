@@ -6,6 +6,14 @@ edition = "2024"
 [workspace]
 members = ["ts-derive", "ts-model"]
 
+[dependencies]
+tokio = { workspace = true }
+ts-model = { workspace = true }
+ts-derive = { workspace = true }
+poem-mcpserver = { workspace = true }
+schemars = { workspace = true }
+serde = { version = "1.0", features = ["derive"] }
+
 [workspace.dependencies]
 reqwest = { version = "0.12.15", features = ["json"] }
 tokio = { version = "1.44.2", features = ["full"] }

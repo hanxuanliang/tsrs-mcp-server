@@ -1,0 +1,77 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            artifact_name: tsrs-mcp-server-linux-amd64
+            binary_name: tsrs-mcp-server
+          - os: windows-latest
+            artifact_name: tsrs-mcp-server-windows-amd64.exe
+            binary_name: tsrs-mcp-server.exe
+          - os: macos-latest
+            artifact_name: tsrs-mcp-server-macos-amd64
+            binary_name: tsrs-mcp-server
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+    
+    - name: Setup Rust cache
+      uses: Swatinem/rust-cache@v2
+      with:
+        shared-key: "release-build-${{ matrix.os }}"
+        cache-on-failure: true
+    
+    - name: Build
+      run: cargo build --verbose --release
+    
+    - name: Rename binary
+      shell: bash
+      run: |
+        cd target/release
+        if [ "${{ matrix.os }}" = "windows-latest" ]; then
+          mv "${{ matrix.binary_name }}" "${{ matrix.artifact_name }}"
+        else
+          mv "${{ matrix.binary_name }}" "${{ matrix.artifact_name }}"
+        fi
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.artifact_name }}
+        path: target/release/${{ matrix.artifact_name }}
+        
+  create_release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            tsrs-mcp-server-linux-amd64
+            tsrs-mcp-server-windows-amd64.exe
+            tsrs-mcp-server-macos-amd64
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
