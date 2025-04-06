@@ -3,7 +3,10 @@ name = "tsrs-mcp-server"
 version = "0.1.0"
 edition = "2024"
 
-[dependencies]
+[workspace]
+members = ["ts-derive", "ts-model"]
+
+[workspace.dependencies]
 reqwest = { version = "0.12.15", features = ["json"] }
 tokio = { version = "1.44.2", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
@@ -19,6 +22,4 @@ schemars = "0.8.22"
 chrono = "0.4"
 futures = "0.3"
 ts-derive = { path = "./ts-derive" }
-
-[workspace]
-members = ["ts-derive"]
+ts-model = { path = "./ts-model" }
