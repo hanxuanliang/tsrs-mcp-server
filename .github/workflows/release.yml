@@ -52,7 +52,7 @@ jobs:
         shell: bash
         run: |
           # Replace with the name of your binary
-          binary_name="kplrs-mcp-server"
+          binary_name="tsrs-mcp-server"
 
           dirname="$binary_name-${{ env.VERSION }}-${{ matrix.target }}"
           mkdir "$dirname"
