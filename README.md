@@ -61,6 +61,15 @@ cargo build --release
 
 ![chatwise-config](./docs/chatwise.jpg)
 
+## 鸣谢
+
+感谢以下项目和库, 尤其是 `poem-mcpserver` 对MCP编写的极强便捷性支持, 没有它, 本项目没有如此简便的实现方式。
+同时感谢 `TuShare API` 提供的数据接口。
+最后要感谢 `rust`, 没有 `procedural macros`, 本项目的模版实现将变得异常机械化。
+
+- [TuShare API](https://tushare.pro/document/2)
+- [poem-mcpserver](https://crates.io/crates/poem-mcpserver)
+
 ## License
 
 本项目采用 MIT 许可证。详见 [LICENSE](LICENSE) 文件。
