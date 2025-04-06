@@ -47,7 +47,7 @@
 TUSHARE_TOKEN=your_token_here
 ```
 
-## 构建和运行
+## 构建
 
 前提条件：安装 Rust 和 Cargo。
 
@@ -57,7 +57,11 @@ cargo build --release
 ./target/release/tsrs-mcp-server
 ```
 
-如下图配置(仅展示在chatwise的配置):
+## 运行
+
+你可以在release中找到对应平台下的编译产物, 例如 `tsrs-mcp-server-<tag>-aarch64-apple-darwin.tar.gz`。
+
+运行方式如下图配置(仅展示在chatwise的配置):
 
 ![chatwise-config](./docs/chatwise.jpg)
 
