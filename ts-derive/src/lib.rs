@@ -145,10 +145,11 @@ pub fn ts_endpoint_derive(input: TokenStream) -> TokenStream {
                     } else {
                         self.fields
                     };
-                    
+
                     // Execute with the fields (either provided or derived)
                     let json = self.request.__execute_request(fields_to_use).await?;
-                    <#resp_type>::from_json(&json)
+                    let res = <#resp_type>::from_json(&json);
+                    res
                 }
 
                 pub async fn execute_as_dicts(self) -> Result<Vec<std::collections::HashMap<String, serde_json::Value>>, Box<dyn std::error::Error>> {
@@ -157,44 +158,44 @@ pub fn ts_endpoint_derive(input: TokenStream) -> TokenStream {
 
                     // 直接使用__execute_request而不是execute，以便保留字段信息
                     let json = self.request.__execute_request(self.fields).await?;
-                    
+
                     // Extract fields and items
                     let data = json.get("data")
                         .ok_or("Missing 'data' field in response")?;
-                    
+
                     let fields = data.get("fields")
                         .ok_or("Missing 'fields' field in data")?
                         .as_array()
                         .ok_or("'fields' is not an array")?;
-                    
+
                     let items = data.get("items")
                         .ok_or("Missing 'items' field in data")?
                         .as_array()
                         .ok_or("'items' is not an array")?;
-                    
+
                     // Convert to Vec<HashMap<String, Value>>
                     let mut result = Vec::with_capacity(items.len());
-                    
+
                     for item_value in items {
                         let item = item_value.as_array()
                             .ok_or("Item is not an array")?;
-                        
+
                         let mut map = HashMap::new();
-                        
+
                         // Map fields to values
                         for (i, field) in fields.iter().enumerate() {
                             if i < item.len() {
                                 let field_name = field.as_str()
                                     .ok_or("Field name is not a string")?
                                     .to_string();
-                                
+
                                 map.insert(field_name, item[i].clone());
                             }
                         }
-                        
+
                         result.push(map);
                     }
-                    
+
                     Ok(result)
                 }
             }
@@ -227,44 +228,44 @@ pub fn ts_endpoint_derive(input: TokenStream) -> TokenStream {
 
                     // 直接使用__execute_request而不是execute，以便保留字段信息
                     let json = self.request.__execute_request(self.fields).await?;
-                    
+
                     // Extract fields and items
                     let data = json.get("data")
                         .ok_or("Missing 'data' field in response")?;
-                    
+
                     let fields = data.get("fields")
                         .ok_or("Missing 'fields' field in data")?
                         .as_array()
                         .ok_or("'fields' is not an array")?;
-                    
+
                     let items = data.get("items")
                         .ok_or("Missing 'items' field in data")?
                         .as_array()
                         .ok_or("'items' is not an array")?;
-                    
+
                     // Convert to Vec<HashMap<String, Value>>
                     let mut result = Vec::with_capacity(items.len());
-                    
+
                     for item_value in items {
                         let item = item_value.as_array()
                             .ok_or("Item is not an array")?;
-                        
+
                         let mut map = HashMap::new();
-                        
+
                         // Map fields to values
                         for (i, field) in fields.iter().enumerate() {
                             if i < item.len() {
                                 let field_name = field.as_str()
                                     .ok_or("Field name is not a string")?
                                     .to_string();
-                                
+
                                 map.insert(field_name, item[i].clone());
                             }
                         }
-                        
+
                         result.push(map);
                     }
-                    
+
                     Ok(result)
                 }
             }
@@ -293,7 +294,7 @@ pub fn ts_endpoint_derive(input: TokenStream) -> TokenStream {
             pub async fn execute(self) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
                 self.__execute_request(None).await
             }
-            
+
             /// Execute with typed response, automatically deriving fields from response struct
             pub async fn execute_typed(self) -> Result<Vec<#resp_type>, Box<dyn std::error::Error>> {
                 // Create requester and call its execute_typed method
@@ -311,7 +312,7 @@ pub fn ts_endpoint_derive(input: TokenStream) -> TokenStream {
 
                 // Load environment variables
                 dotenv().ok();
-                
+
                 // Get token from environment
                 let token = env::var("TUSHARE_TOKEN")
                     .map_err(|_| "TUSHARE_TOKEN environment variable not set")?;
@@ -335,8 +336,9 @@ pub fn ts_endpoint_derive(input: TokenStream) -> TokenStream {
                 // Send request
                 let client = Client::new();
                 let response = client
-                    .post("https://api.tushare.pro")
-                    .json(&Value::Object(request_body))
+                    .post("http://api.tushare.pro/")
+                    .header("Content-Type", "application/json")
+                    .body(serde_json::to_string(&Value::Object(request_body))?)
                     .send()
                     .await?;
 
@@ -428,6 +430,9 @@ pub fn ts_response_derive(input: TokenStream) -> TokenStream {
 
         // Extract index from ts_field attribute
         let mut field_index = None;
+        // Check for #[serde(default)] attribute
+        let mut has_serde_default = false;
+
         for attr in &field.attrs {
             if attr.path().is_ident("ts_field") {
                 match attr.meta.require_list() {
@@ -441,6 +446,17 @@ pub fn ts_response_derive(input: TokenStream) -> TokenStream {
                     }
                     Err(e) => return e.to_compile_error(),
                 }
+            } else if attr.path().is_ident("serde") {
+                 // Use parse_nested_meta for a more robust check
+                 let _ = attr.parse_nested_meta(|meta| {
+                    if meta.path.is_ident("default") {
+                        has_serde_default = true;
+                    }
+                    // Ignore other serde attributes like rename, skip, etc.
+                    // Need to handle potential errors within meta if attributes are complex
+                    Ok(())
+                });
+                // Ignoring potential parse_nested_meta error for simplicity for now
             }
         }
 
@@ -452,8 +468,9 @@ pub fn ts_response_derive(input: TokenStream) -> TokenStream {
             }
         };
 
-        let from_value = match field_type_is_option(field_type) {
-            true => quote! {
+        let from_value = if field_type_is_option(field_type) {
+            // Logic for Option<T>
+            quote! {
                 let #field_name = if item.len() > #index {
                     let val = &item[#index];
                     if val.is_null() {
@@ -462,26 +479,49 @@ pub fn ts_response_derive(input: TokenStream) -> TokenStream {
                         Some(serde_json::from_value(val.clone())?)
                     }
                 } else {
-                    None
+                    None // Treat missing index as None for Option types
                 };
-            },
-            false => quote! {
-                let #field_name = if item.len() > #index {
-                    serde_json::from_value(item[#index].clone())?
+            }
+        } else if has_serde_default {
+            // Logic for non-Option<T> with #[serde(default)]
+             quote! {
+                let #field_name:#field_type = if item.len() > #index {
+                    let val = &item[#index];
+                    if val.is_null() {
+                        Default::default() // Use default if null
+                    } else {
+                        // Using unwrap_or_default() on the Result is cleaner
+                        serde_json::from_value(val.clone()).unwrap_or_default()
+                    }
                 } else {
-                    return Err(format!("Field index {} out of bounds", #index).into());
+                    Default::default() // Use default if index out of bounds
                 };
-            },
+            }
+        } else {
+            // Logic for non-Option<T> *without* #[serde(default)]
+            quote! {
+                let #field_name = if item.len() > #index {
+                    let val = &item[#index];
+                     // Error on null for non-optional, non-default fields
+                    if val.is_null() {
+                         return Err(format!("Field '{}' at index {} is null, but type is not Option and #[serde(default)] is not specified", stringify!(#field_name), #index).into());
+                    }
+                    serde_json::from_value(val.clone())?
+                } else {
+                    return Err(format!("Field index {} out of bounds for required field '{}'", #index, stringify!(#field_name)).into());
+                };
+            }
         };
 
         quote! { #from_value }
     });
 
     // 生成字段名称列表（用于构造和获取字段名）
-    let field_names: Vec<_> = fields.iter().map(|field| {
-        field.ident.as_ref().unwrap().clone()
-    }).collect();
-    
+    let field_names: Vec<_> = fields
+        .iter()
+        .map(|field| field.ident.as_ref().unwrap().clone())
+        .collect();
+
     // 生成用于构造结构体的字段列表
     let struct_field_tokens = {
         let field_idents = &field_names;
@@ -499,22 +539,22 @@ pub fn ts_response_derive(input: TokenStream) -> TokenStream {
             /// Parse a list of items from Tushare API response
             pub fn from_json(json: &serde_json::Value) -> Result<Vec<Self>, Box<dyn std::error::Error>> {
                 use serde_json::Value;
-                
+
                 // Extract data from response
                 let data = json.get("data")
                     .ok_or_else(|| "Missing 'data' field in response")?;
-                
+
                 let items = data.get("items")
                     .ok_or_else(|| "Missing 'items' field in data")?
                     .as_array()
                     .ok_or_else(|| "'items' is not an array")?;
-                
+
                 let mut result = Vec::with_capacity(items.len());
 
                 for item_value in items {
                     let item = item_value.as_array()
                         .ok_or_else(|| "Item is not an array")?;
-                    
+
                     #(#field_parsers)*
 
                     result.push(Self {
@@ -524,12 +564,12 @@ pub fn ts_response_derive(input: TokenStream) -> TokenStream {
 
                 Ok(result)
             }
-            
+
             /// Get the API name for this response
             pub fn api_name() -> &'static str {
                 #api_name
             }
-            
+
             /// Get field names from the response struct
             pub fn get_field_names() -> Vec<&'static str> {
                 vec![

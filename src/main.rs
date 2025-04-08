@@ -71,8 +71,7 @@ impl TsApp {
     ///
     /// # Arguments
     /// * `tag` - 板单类型(枚举值: 涨停/炸板/跌停/自然涨停/竞价)
-    /// * `start_date` - 开始日期(YYYYMMDD格式)
-    /// * `end_date` - 结束日期(YYYYMMDD格式)
+    /// * `trade_date` - 交易日期(YYYYMMDD格式)
     ///
     /// # Returns
     /// - `ts_code`: 代码
@@ -102,14 +101,12 @@ impl TsApp {
     async fn kpl_list(
         &self,
         tag: String,
-        start_date: String,
-        end_date: String,
+        trade_date: String
     ) -> Json<Vec<KplListItem>> {
         Json(
             KplListReq {
                 tag,
-                start_date,
-                end_date,
+                trade_date
             }
             .execute_typed()
             .await

@@ -1,56 +1,80 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use ts_derive::TsResponse;
 
-#[derive(TsResponse, Serialize, Debug)]
+#[derive(TsResponse, Serialize, Deserialize, Debug, Default)]
 #[response(api = "kpl_list")]
 pub struct KplListItem {
     #[ts_field(0)]
+    #[serde(default)] 
     pub ts_code: String,
     #[ts_field(1)]
+    #[serde(default)] 
     pub name: String,
     #[ts_field(2)]
+    #[serde(default)] 
     pub trade_date: String,
     #[ts_field(3)]
+    #[serde(default)]
     pub lu_time: String,
     #[ts_field(4)]
+    #[serde(default)]
     pub ld_time: String,
     #[ts_field(5)]
+    #[serde(default)]
     pub open_time: String,
     #[ts_field(6)]
+    #[serde(default)]
     pub last_time: String,
     #[ts_field(7)]
+    #[serde(default)]
     pub lu_desc: String,
     #[ts_field(8)]
+    #[serde(default)]
     pub tag: String,
     #[ts_field(9)]
+    #[serde(default)]
     pub theme: String,
     #[ts_field(10)]
+    #[serde(default)]
     pub net_change: f64,
     #[ts_field(11)]
+    #[serde(default)]
     pub bid_amount: f64,
     #[ts_field(12)]
+    #[serde(default)]
     pub status: String,
     #[ts_field(13)]
+    #[serde(default)]
     pub bid_change: f64,
     #[ts_field(14)]
+    #[serde(default)]
     pub bid_turnover: f64,
     #[ts_field(15)]
+    #[serde(default)]
     pub lu_bid_vol: f64,
     #[ts_field(16)]
+    #[serde(default)]
     pub pct_chg: f64,
     #[ts_field(17)]
+    #[serde(default)]
     pub bid_pct_chg: f64,
     #[ts_field(18)]
+    #[serde(default)]
     pub rt_pct_chg: f64,
     #[ts_field(19)]
+    #[serde(default)]
     pub limit_order: f64,
     #[ts_field(20)]
+    #[serde(default)]
     pub amount: f64,
     #[ts_field(21)]
+    #[serde(default)]
     pub turnover_rate: f64,
     #[ts_field(22)]
+    #[serde(default)]
     pub free_float: f64,
     #[ts_field(23)]
+    #[serde(default)]
     pub lu_limit_order: f64,
 }
 
@@ -85,10 +109,11 @@ pub struct KplConceptConsItem {
     #[ts_field(5)]
     pub desc: String,
     #[ts_field(6)]
-    pub hot_num: Option<String>,
+    #[serde(default)]
+    pub hot_num: String,
 }
 
-#[derive(TsResponse, Serialize, Debug)]
+#[derive(TsResponse, Serialize, Deserialize, Debug)]
 #[response(api = "ths_hot")]
 pub struct ThsHotItem {
     #[ts_field(0)]

@@ -26,8 +26,14 @@ pub struct ThsHotReq {
 #[endpoint(api = "kpl_list", desc = "获取涨跌停板数据", resp = KplListItem)]
 pub struct KplListReq {
     pub tag: String,
-    pub start_date: String,
-    pub end_date: String,
+    pub trade_date: String,
+}
+
+#[derive(TsEndpoint, Debug, Serialize)]
+#[endpoint(api = "limit_list_ths", desc = "涨跌停榜单(同花顺)", resp = KplListItem)]
+pub struct LimitListThs {
+    pub tag: String,
+    pub trade_date: String,
 }
 
 #[derive(TsEndpoint, Debug, Serialize)]
@@ -75,4 +81,35 @@ pub struct StkMinsReq {
     pub freq: String,
     pub start_date: Option<String>,
     pub end_date: Option<String>,
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::endpoint::*;
+
+    #[tokio::test]
+    async fn test() {
+        let res = ThsHotReq {
+            trade_date: "20250407".to_string(),
+            market: "热股".to_string(),
+        }
+        .execute()
+        .await
+        .unwrap_or_default();
+
+        println!("res: {:?}", res);
+    }
+
+    #[tokio::test]
+    async fn test2() {
+        let res: Vec<KplListItem> = KplListReq {
+            tag: "涨停".to_string(),
+            trade_date: "20250407".to_string(),
+        }
+        .execute_typed()
+        .await
+        .unwrap_or_default();
+
+        println!("{:?}", res);
+    }
 }
