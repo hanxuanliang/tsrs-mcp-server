@@ -98,19 +98,12 @@ impl TsApp {
     /// - `turnover_rate`: 换手率%
     /// - `free_float`: 实际流通
     /// - `lu_limit_order`: 最大封单
-    async fn kpl_list(
-        &self,
-        tag: String,
-        trade_date: String
-    ) -> Json<Vec<KplListItem>> {
+    async fn kpl_list(&self, tag: String, trade_date: String) -> Json<Vec<KplListItem>> {
         Json(
-            KplListReq {
-                tag,
-                trade_date
-            }
-            .execute_typed()
-            .await
-            .unwrap_or_default(),
+            KplListReq { tag, trade_date }
+                .execute_typed()
+                .await
+                .unwrap_or_default(),
         )
     }
 

@@ -16,6 +16,13 @@ pub struct LimitStepReq {
 }
 
 #[derive(TsEndpoint, Debug, Serialize)]
+#[endpoint(api = "limit_step", desc = "获取每天连板个数晋级的股票", resp = LimitStepItem)]
+pub struct HisLimitStepReq {
+    pub start_date: String,
+    pub end_date: String,
+}
+
+#[derive(TsEndpoint, Debug, Serialize)]
 #[endpoint(api = "ths_hot", desc = "获取同花顺App热榜数据", resp = ThsHotItem)]
 pub struct ThsHotReq {
     pub trade_date: String,
@@ -111,5 +118,23 @@ mod tests {
         .unwrap_or_default();
 
         println!("{:?}", res);
+    }
+
+    #[tokio::test]
+    async fn test_his_limit_step() {
+        let res = HisLimitStepReq {
+            start_date: "20250407".to_string(),
+            end_date: "20250409".to_string(),
+        }
+        .execute_typed()
+        .await
+        .unwrap_or_default();
+
+        for item in res {
+            println!(
+                "code: {:?} name: {:?}, status: {:?} trade_date: {:?}",
+                item.ts_code, item.name, item.nums, item.trade_date
+            );
+        }
     }
 }

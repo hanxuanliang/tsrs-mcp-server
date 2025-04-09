@@ -13,7 +13,6 @@ ts-derive = { workspace = true }
 poem-mcpserver = { workspace = true }
 schemars = { workspace = true }
 serde = { version = "1.0", features = ["derive"] }
-paste = "1.0.15"
 
 [workspace.dependencies]
 reqwest = { version = "0.12.15", features = ["json"] }
