@@ -9,7 +9,7 @@ repository = "https://github.com/hanxuanliang/tsrs-mcp-server"
 documentation = "https://docs.rs/ts-derive"
 readme = "README.md"
 keywords = ["tushare", "api", "derive", "macro"]
-categories = ["api-bindings", "development-tools::procedural-macros"]
+categories = ["api-bindings", "development-tools"]
 
 [lib]
 proc-macro = true
