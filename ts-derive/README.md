@@ -2,6 +2,18 @@
 
 Tushare API 的 Rust 过程宏实现
 
+[![Crates.io](https://img.shields.io/crates/v/ts-derive.svg)](https://crates.io/crates/ts-derive)
+[![Documentation](https://docs.rs/ts-derive/badge.svg)](https://docs.rs/ts-derive)
+
+## 安装
+
+在 Cargo.toml 中添加依赖：
+
+```toml
+[dependencies]
+ts-derive = "0.1.0"
+```
+
 ## 概述
 
 这个 crate 提供了两个过程宏，简化了使用 Tushare API 的工作：
@@ -33,26 +45,26 @@ async fn example() -> Result<(), Box<dyn std::error::Error>> {
     let request = ConceptListRequest {
         trade_date: "20250403".to_string(),
     };
-    
+
     // 以三种方式使用:
-    
+
     // 1. 直接执行，返回原始JSON
     let json = request.clone().execute().await?;
-    
+
     // 2. 指定字段并执行，返回字段映射的字典集合
     let dicts = request.clone()
         .with_fields(vec!["trade_date", "ts_code", "name"])
         .execute_as_dicts()
         .await?;
-        
+
     // 3. 指定字段并执行，返回类型化响应
     let items = request
         .with_fields(vec!["trade_date", "ts_code", "name"])
         .execute_typed()
         .await?;
-    
+
     // ... 处理响应
-    
+
     Ok(())
 }
 ```
@@ -175,17 +187,17 @@ pub async fn example_usage() -> Result<(), Box<dyn std::error::Error>> {
     let request = ConceptListRequest {
         trade_date: "20250403".to_string(),
     };
-    
+
     // 链式调用方式，指定字段并返回类型化响应
     let items = request
         .with_fields(vec!["trade_date", "ts_code", "name", "z_t_num", "up_num"])
         .execute_typed()
         .await?;
-    
+
     println!("获取到 {} 个概念股信息", items.len());
     for item in items {
         println!("{}: {}", item.ts_code, item.name);
     }
-    
+
     Ok(())
-} 
+}
