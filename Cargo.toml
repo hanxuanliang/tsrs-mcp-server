@@ -11,8 +11,14 @@ tokio = { workspace = true }
 ts-model = { workspace = true }
 ts-derive = { workspace = true }
 poem-mcpserver = { workspace = true }
+poem = { workspace = true }
 schemars = { workspace = true }
-serde = { version = "1.0", features = ["derive"] }
+serde = { workspace = true }
+dotenvy = { workspace = true }
+
+tracing = "0.1"
+tracing-subscriber = "0.3"
+clap = { version = "4.5.3", features = ["derive"] }
 
 [workspace.dependencies]
 reqwest = { version = "0.12.15", features = ["json"] }
@@ -25,7 +31,8 @@ tracing = "0.1"
 tracing-subscriber = "0.3"
 lazy_static = "1.4.0"
 dotenvy = "0.15.7"
-poem-mcpserver = { version = "0.1.3", features = ["poem"] }
+poem-mcpserver = { version = "0.2.1", features = ["poem", "streamable-http"] }
+poem = { version = "3.1.9", features = ["sse"] }
 schemars = "0.8.22"
 chrono = "0.4"
 futures = "0.3"

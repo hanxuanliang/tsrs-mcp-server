@@ -1,5 +1,23 @@
-use poem_mcpserver::{McpServer, Tools, stdio::stdio, tool::Json};
+use clap::{Parser, ValueEnum};
+use poem_mcpserver::{McpServer, Tools, content::Json, stdio::stdio};
+
 use ts_model::*;
+
+#[derive(Parser)]
+#[command(author, version, about, long_about = None)]
+struct Cli {
+    /// The mode to run the server in
+    #[arg(value_enum)]
+    mode: Option<Mode>,
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, ValueEnum)]
+enum Mode {
+    /// Run in stdio mode (default)
+    Stdio,
+    /// Run in Streamable HTTP mode
+    Stream,
+}
 
 struct TsApp {}
 
@@ -312,5 +330,27 @@ impl TsApp {
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    stdio(McpServer::new().tools(TsApp {})).await
+    tracing_subscriber::fmt().init();
+
+    let cli = Cli::parse();
+    match cli.mode.unwrap_or(Mode::Stdio) {
+        Mode::Stdio => {
+            tracing::info!("Starting in stdio mode...");
+            stdio(McpServer::new().tools(TsApp {})).await
+        }
+        Mode::Stream => {
+            tracing::info!("Starting in Streamable HTTP mode...");
+            use poem::{EndpointExt, Route, Server, listener::TcpListener, middleware::Cors};
+            use poem_mcpserver::{McpServer, streamable_http};
+
+            let listener = TcpListener::bind("127.0.0.1:8999");
+            let app = Route::new()
+                .at(
+                    "/",
+                    streamable_http::endpoint(|_| McpServer::new().tools(TsApp {})),
+                )
+                .with(Cors::new());
+            Server::new(listener).run(app).await
+        }
+    }
 }
