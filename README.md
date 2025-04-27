@@ -63,7 +63,7 @@ cargo build --release
 
 服务器支持两种运行模式：
 
-1. Stdio模式(默认)：直接下载release产物
+1. Stdio模式(默认)：直接下载release产物。执行: `./tsrs-mcp-server stdio`
 2. Stream模式：提供Streamable HTTP模式。endpoint: http://127.0.0.1:8999
 
 运行方式如下图配置(仅展示在chatwise的配置):
