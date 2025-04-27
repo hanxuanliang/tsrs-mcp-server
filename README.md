@@ -61,6 +61,11 @@ cargo build --release
 
 你可以在release中找到对应平台下的编译产物, 例如 `tsrs-mcp-server-<tag>-aarch64-apple-darwin.tar.gz`。
 
+服务器支持两种运行模式：
+
+1. Stdio模式(默认)：直接下载release产物
+2. Stream模式：提供Streamable HTTP模式。endpoint: http://127.0.0.1:8999
+
 运行方式如下图配置(仅展示在chatwise的配置):
 
 ![chatwise-config](./docs/chatwise.jpg)
